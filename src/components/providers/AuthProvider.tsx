@@ -47,26 +47,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Récupérer le rôle depuis la table profiles
   const fetchRole = useCallback(async (userId: string) => {
+    if (!supabase) return;
     const { data } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', userId)
       .single();
-    
+
     if (data) {
       setRole(data.role as UserRole);
     }
   }, [supabase]);
 
   useEffect(() => {
+    // Skip auth when Supabase is not configured (build time / missing env vars)
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
+
     // 1. Récupérer la session initiale
     const getInitialSession = async () => {
       try {
         const { data: { session: initialSession } } = await supabase.auth.getSession();
-        
+
         setSession(initialSession);
         setUser(initialSession?.user ?? null);
-        
+
         if (initialSession?.user) {
           await fetchRole(initialSession.user.id);
         }
@@ -111,6 +118,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Fonction de déconnexion propre
   const signOut = useCallback(async () => {
+    if (!supabase) return;
     try {
       await supabase.auth.signOut();
       setUser(null);
