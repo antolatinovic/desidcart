@@ -8,8 +8,6 @@ import {
   LogOut, ChevronLeft 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
 
 const navGroups: Record<string, { label: string; items: { label: string; href: string; icon: any }[] }> = {
   '/dashboard/artiste': {
@@ -48,17 +46,10 @@ const navGroups: Record<string, { label: string; items: { label: string; href: s
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
 
   // Déterminer quel groupe de nav afficher
   const activeGroup = Object.keys(navGroups).find((prefix) => pathname.startsWith(prefix));
   const nav = activeGroup ? navGroups[activeGroup] : null;
-
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/');
-  };
 
   return (
     <div className="min-h-screen bg-cream-100 flex">
@@ -106,13 +97,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Logout */}
         <div className="p-4 border-t border-cream-200">
-          <button
-            onClick={handleLogout}
+          <Link
+            href="/"
             className="flex items-center gap-3 px-3 py-2.5 rounded text-sm text-primary-400 hover:bg-red-50 hover:text-red-600 transition-colors w-full"
           >
             <LogOut size={18} />
             Se déconnecter
-          </button>
+          </Link>
         </div>
       </aside>
 
