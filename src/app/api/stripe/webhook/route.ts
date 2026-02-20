@@ -1,7 +1,7 @@
 // @ts-nocheck — Supabase types need regeneration with `npm run db:types`
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripe } from '@/lib/stripe';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import Stripe from 'stripe';
 
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       body,
       signature,
       process.env.STRIPE_WEBHOOK_SECRET
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
           const subscriptionId = session.subscription as string;
 
           // Récupérer les détails de la subscription
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
 
           await supabase.from('subscriptions').upsert({
             artist_id: userId,
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
         const subscriptionId = invoice.subscription as string;
 
         if (subscriptionId) {
-          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+          const subscription = await getStripe().subscriptions.retrieve(subscriptionId);
 
           await supabase
             .from('subscriptions')

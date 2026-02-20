@@ -1,6 +1,13 @@
 import { Resend } from 'resend';
 
-export const resend = new Resend(process.env.RESEND_API_KEY || '');
+let _resend: Resend | null = null;
+
+function getResend(): Resend {
+  if (!_resend) {
+    _resend = new Resend(process.env.RESEND_API_KEY!);
+  }
+  return _resend;
+}
 
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'contact@defiscart.fr';
 const APP_NAME = 'DefiscArt';
@@ -21,7 +28,7 @@ interface EmailParams {
 
 async function sendEmail(params: EmailParams) {
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: `${APP_NAME} <${FROM_EMAIL}>`,
       to: params.to,
       subject: params.subject,

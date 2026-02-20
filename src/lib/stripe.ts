@@ -1,9 +1,18 @@
 import Stripe from 'stripe';
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2025-02-24.acacia',
-  typescript: true,
-});
+let _stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!_stripe) {
+    _stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-02-24.acacia',
+      typescript: true,
+    });
+  }
+  return _stripe;
+}
+
+export { getStripe };
 
 /**
  * Crée une session Stripe Checkout pour l'abonnement artiste (49€/an)
@@ -15,7 +24,7 @@ export async function createArtistSubscriptionCheckout(params: {
   successUrl: string;
   cancelUrl: string;
 }) {
-  const session = await stripe.checkout.sessions.create({
+  const session = await getStripe().checkout.sessions.create({
     mode: 'subscription',
     payment_method_types: ['card'],
     customer: params.customerId || undefined,
@@ -54,7 +63,7 @@ export async function createArtworkPaymentIntent(params: {
   artistId: string;
   description: string;
 }) {
-  const paymentIntent = await stripe.paymentIntents.create({
+  const paymentIntent = await getStripe().paymentIntents.create({
     amount: params.amountCents,
     currency: 'eur',
     receipt_email: params.customerEmail,
